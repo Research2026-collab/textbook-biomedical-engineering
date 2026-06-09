@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Textbook Biomedical Engineering – Curriculum Whiteboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0f1923;
+  --surface:      #172030;
+  --surface2:     #1e2d40;
+  --border:       rgba(255,255,255,0.10);
+  --text:         #e8e8e4;
+  --text-muted:   #8a9ab0;
+  --text-faint:   #4a5a6a;
+
+  --col-label-w:  120px;
+  --col-theme-w:  220px;
+  --col-add-w:    90px;
+  --row-min-h:    90px;
+  --row-sem-h:    36px;
+
+  --master-bg:    #26215C; --master-fg:   #AFA9EC; --master-bd:   #534AB7;
+  --bachelor-bg:  #04342C; --bachelor-fg: #5DCAA5; --bachelor-bd: #1D9E75;
+  --diploma-bg:   #412402; --diploma-fg:  #EF9F27; --diploma-bd:  #BA7517;
+
+  --c1: #85B7EB; --c1-bg: #0C447C; --c1-bd: #378ADD;
+  --c2: #5DCAA5; --c2-bg: #085041; --c2-bd: #1D9E75;
+  --c3: #EF9F27; --c3-bg: #633806; --c3-bd: #BA7517;
+  --c4: #F0997B; --c4-bg: #712B13; --c4-bd: #D85A30;
+  --c5: #AFA9EC; --c5-bg: #3C3489; --c5-bd: #7F77DD;
+
+  --draft-fg:  #EF9F27; --draft-bg:  #412402;
+  --review-fg: #85B7EB; --review-bg: #0C447C;
+  --final-fg:  #5DCAA5; --final-bg:  #085041;
+}
+
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+}
+.topbar h1 { font-size: 18px; font-weight: 500; margin-bottom: 0.2rem; }
+.topbar p  { font-size: 12px; color: var(--text-muted); }
+.live { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+.dot  { width: 7px; height: 7px; border-radius: 50%; background: #4caf82; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── FILTERS ── */
+.filters {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; margin-bottom: 1.25rem;
+}
+.filter-label { font-size: 11px; color: var(--text-faint); margin-right: 2px; }
+.divider { width: 1px; height: 18px; background: var(--border); margin: 0 6px; }
+.pill {
+  font-size: 11px; font-weight: 500;
+  padding: 0.2rem 0.7rem; border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.2);
+  background: transparent; color: var(--text-muted);
+  cursor: pointer; user-select: none; transition: all 0.15s;
+}
+.pill.active { background: var(--text); color: #0f1923; border-color: var(--text); }
+
+/* ── ERROR ── */
+.error {
+  display: none; background: #501313; border: 0.5px solid #E24B4A;
+  border-radius: 6px; padding: 0.6rem 1rem;
+  font-size: 12px; color: #F09595; margin-bottom: 1rem;
+}
+.error.show { display: block; }
+
+/* ── THE MATRIX ── */
+/*
+  The matrix is a single CSS Grid.
+  Columns: [label col] [theme col] × N [add col]
+  Every row — header, summary, semester — is a direct child of this grid,
+  so all columns are guaranteed to be pixel-perfect.
+*/
+.matrix-wrap { overflow-x: auto; padding-bottom: 1rem; }
+
+.matrix {
+  display: inline-grid;
+  /* columns set dynamically via JS */
+  border-top: 0.5px solid var(--border);
+  border-left: 0.5px solid var(--border);
+  min-width: max-content;
+}
+
+/* Every cell shares these basics */
+.mc {
+  border-right: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  font-size: 11px;
+}
+
+/* Label column (col 1) */
+.mc-label {
+  background: var(--surface2);
+  color: var(--text-muted);
+  display: flex; align-items: center;
+  padding: 0 0.75rem;
+  min-height: var(--row-sem-h);
+}
+
+/* Column header row */
+.mc-head {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; padding: 0.5rem 0.75rem;
+  text-align: center;
+}
+.mc-head-spacer { background: var(--bg); border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+.mc-head.ch1 { background: var(--c1-bg); color: var(--c1); border-bottom-color: var(--c1-bd); }
+.mc-head.ch2 { background: var(--c2-bg); color: var(--c2); border-bottom-color: var(--c2-bd); }
+.mc-head.ch3 { background: var(--c3-bg); color: var(--c3); border-bottom-color: var(--c3-bd); }
+.mc-head.ch4 { background: var(--c4-bg); color: var(--c4); border-bottom-color: var(--c4-bd); }
+.mc-head.ch5 { background: var(--c5-bg); color: var(--c5); border-bottom-color: var(--c5-bd); }
+.mc-head.ch-add {
+  background: var(--surface2); color: var(--text-faint);
+  border: 0.5px dashed rgba(255,255,255,0.15);
+  border-left: none; border-top: none;
+  cursor: pointer; font-size: 11px;
+}
+.mc-head.ch-add:hover { color: var(--text-muted); background: #253545; }
+
+/* Level header row */
+.mc-level {
+  display: flex; align-items: center;
+  font-size: 12px; font-weight: 600;
+  padding: 0 0.75rem;
+  cursor: pointer; user-select: none;
+  min-height: var(--row-sem-h);
+}
+.mc-level.master   { background: var(--master-bg);   color: var(--master-fg); }
+.mc-level.bachelor { background: var(--bachelor-bg); color: var(--bachelor-fg); }
+.mc-level.diploma  { background: var(--diploma-bg);  color: var(--diploma-fg); }
+.mc-toggle { margin-left: auto; font-size: 10px; opacity: 0.6; }
+
+/* Summary cells (entry count) */
+.mc-summary {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface2); color: var(--text-faint);
+  min-height: var(--row-sem-h);
+}
+
+/* Data cells */
+.mc-cell {
+  background: var(--surface);
+  padding: 0.6rem 0.7rem;
+  display: flex; flex-direction: column; gap: 4px;
+  min-height: var(--row-min-h);
+}
+.mc-cell:hover { background: #1c2a3e; }
+.mc-cell[data-col="0"] { border-left: 2px solid var(--c1-bd); }
+.mc-cell[data-col="1"] { border-left: 2px solid var(--c2-bd); }
+.mc-cell[data-col="2"] { border-left: 2px solid var(--c3-bd); }
+.mc-cell[data-col="3"] { border-left: 2px solid var(--c4-bd); }
+.mc-cell[data-col="4"] { border-left: 2px solid var(--c5-bd); }
+.mc-cell.mc-add { background: var(--surface2); cursor: default; }
+
+.cell-empty { color: var(--text-faint); font-size: 11px; font-style: italic; margin: auto; }
+
+/* Entry card */
+.entry {
+  background: var(--surface2);
+  border: 0.5px solid rgba(255,255,255,0.07);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  font-size: 11px; line-height: 1.5;
+}
+.entry-title   { font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.entry-content { color: var(--text-muted); font-size: 10.5px; line-height: 1.4; }
+.entry-meta    { display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.entry-author  { font-size: 9.5px; color: var(--text-faint); margin-left: auto; }
+
+/* Badges */
+.badge {
+  font-size: 9.5px; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+.b-theory   { background: var(--c1-bg); color: var(--c1); }
+.b-lab      { background: var(--c3-bg); color: var(--c3); }
+.b-practice { background: var(--c4-bg); color: var(--c4); }
+.b-project  { background: var(--c2-bg); color: var(--c2); }
+.b-draft    { background: var(--draft-bg);  color: var(--draft-fg); }
+.b-review   { background: var(--review-bg); color: var(--review-fg); }
+.b-final    { background: var(--final-bg);  color: var(--final-fg); }
+
+/* ── LEGEND & INFO ── */
+.legend {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; margin-top: 1.5rem;
+  padding-top: 1rem; border-top: 0.5px solid var(--border);
+}
+.legend-label { font-size: 11px; color: var(--text-faint); }
+
+.infobar {
+  margin-top: 1rem; padding: 0.75rem 1rem;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px; color: var(--text-muted); line-height: 1.7;
+}
+.infobar strong { color: var(--text); }
+.infobar code {
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px; padding: 1px 4px; font-size: 10.5px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>Textbook Biomedical Engineering – Curriculum Whiteboard</h1>
+    <p>Read-only view &middot; Edit directly in Google Sheets &middot; Refreshes every 20 seconds</p>
+  </div>
+  <div class="live"><div class="dot"></div><span id="livetext">Loading&hellip;</span></div>
+</div>
+
+<div class="error" id="err">Could not reach the data source. Please check the Apps Script URL.</div>
+
+<div class="filters">
+  <span class="filter-label">Level</span>
+  <span class="pill active" data-f="level" data-v="all">All</span>
+  <span class="pill" data-f="level" data-v="Master">Master</span>
+  <span class="pill" data-f="level" data-v="Bachelor">Bachelor</span>
+  <span class="pill" data-f="level" data-v="Diploma">Diploma</span>
+  <div class="divider"></div>
+  <span class="filter-label">Status</span>
+  <span class="pill active" data-f="status" data-v="all">All</span>
+  <span class="pill" data-f="status" data-v="Draft">Draft</span>
+  <span class="pill" data-f="status" data-v="Review">Review</span>
+  <span class="pill" data-f="status" data-v="Final">Final</span>
+  <div class="divider"></div>
+  <span class="filter-label">Type</span>
+  <span class="pill active" data-f="type" data-v="all">All</span>
+  <span class="pill" data-f="type" data-v="Theory">Theory</span>
+  <span class="pill" data-f="type" data-v="Lab">Lab</span>
+  <span class="pill" data-f="type" data-v="Practice">Practice</span>
+  <span class="pill" data-f="type" data-v="Project">Project</span>
+</div>
+
+<div class="matrix-wrap"><div class="matrix" id="matrix"></div></div>
+
+<div class="legend">
+  <span class="legend-label">Type</span>
+  <span class="badge b-theory">Theory</span>
+  <span class="badge b-lab">Lab</span>
+  <span class="badge b-practice">Practice</span>
+  <span class="badge b-project">Project</span>
+  <div class="divider"></div>
+  <span class="legend-label">Status</span>
+  <span class="badge b-draft">Draft</span>
+  <span class="badge b-review">Review</span>
+  <span class="badge b-final">Final</span>
+</div>
+
+<div class="infobar">
+  <strong>How to add content</strong> &mdash; Open the Google Sheet <em>Textbook_Biomedical_Engineering</em>, tab <em>Curriculum</em>, and add a row with these columns:
+  <code>level</code> (Master / Bachelor / Diploma) &nbsp;
+  <code>semester</code> (S1, S2 &hellip;) &nbsp;
+  <code>topic</code> &nbsp;
+  <code>title</code> &nbsp;
+  <code>content</code> &nbsp;
+  <code>type</code> (Theory / Lab / Practice / Project) &nbsp;
+  <code>author</code> &nbsp;
+  <code>status</code> (Draft / Review / Final) &nbsp;
+  <code>last_modified</code>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxAsEYvJTMNFIretCdHPGwAwDxAlaPgr7hkxVn07F9FOTrV5Ma5CHqp1Bs_L9S9AcXl/exec';
+
+const LEVELS = ['Master', 'Bachelor', 'Diploma'];
+const SEMESTERS = {
+  Master:   ['S1','S2','S3','S4'],
+  Bachelor: ['S1','S2','S3','S4','S5','S6','S7','S8'],
+  Diploma:  ['S1','S2','S3','S4','S5','S6'],
+};
+const DEFAULT_THEMES = [
+  { key:'Instrumentation & Sensing',  short:'Instrumentation',   cls:'ch1', ci:0 },
+  { key:'Medical Imaging',            short:'Medical Imaging',    cls:'ch2', ci:1 },
+  { key:'Biomechanics & Materials',   short:'Biomechanics',       cls:'ch3', ci:2 },
+  { key:'BCI / Neural Engineering',   short:'BCI / Neural Eng.',  cls:'ch4', ci:3 },
+  { key:'Clinical Systems',           short:'Clinical Systems',   cls:'ch5', ci:4 },
+];
+
+let allData      = [];
+let themes       = DEFAULT_THEMES.map(t => ({...t}));
+let collapsed    = {};
+let fLevel  = 'all', fStatus = 'all', fType = 'all';
+
+/* ── FETCH ── */
+async function fetchData() {
+  if (!SHEET_URL || SHEET_URL.includes('PASTE')) {
+    allData = sample();
+    render();
+    document.getElementById('livetext').textContent = 'Sample data – configure SHEET_URL';
+    return;
+  }
+  try {
+    const res = await fetch(SHEET_URL + '?t=' + Date.now());
+    allData = await res.json();
+    document.getElementById('err').classList.remove('show');
+    discoverThemes();
+    render();
+    const t = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('livetext').textContent = 'Last updated ' + t;
+  } catch(e) {
+    document.getElementById('err').classList.add('show');
+    document.getElementById('livetext').textContent = 'Connection error';
+  }
+}
+
+function discoverThemes() {
+  const known = new Set(themes.map(t => norm(t.key)));
+  allData.forEach(r => {
+    if (r.topic && !known.has(norm(r.topic))) {
+      known.add(norm(r.topic));
+      themes.push({ key: r.topic, short: r.topic.length > 20 ? r.topic.slice(0,18)+'…' : r.topic, cls:'', ci: themes.length });
+    }
+  });
+}
+
+/* ── RENDER ── */
+function render() {
+  const el = document.getElementById('matrix');
+
+  // filtered data
+  const data = allData.filter(r => {
+    if (fLevel  !== 'all' && r.level  !== fLevel)               return false;
+    if (fStatus !== 'all' && (r.status||'Draft') !== fStatus)   return false;
+    if (fType   !== 'all' && (r.type  ||'')      !== fType)     return false;
+    return true;
+  });
+
+  const visLevels = fLevel === 'all' ? LEVELS : [fLevel];
+  const nThemes   = themes.length;
+
+  // Set grid columns: label | theme×N | add
+  el.style.gridTemplateColumns =
+    `${getComputedStyle(document.documentElement).getPropertyValue('--col-label-w').trim()} repeat(${nThemes}, ${getComputedStyle(document.documentElement).getPropertyValue('--col-theme-w').trim()}) ${getComputedStyle(document.documentElement).getPropertyValue('--col-add-w').trim()}`;
+
+  let html = '';
+
+  /* ── HEADER ROW ── */
+  html += `<div class="mc mc-head-spacer"></div>`;
+  themes.forEach(t => {
+    html += `<div class="mc mc-head ${t.cls}">${esc(t.short)}</div>`;
+  });
+  html += `<div class="mc mc-head ch-add" onclick="addCol()">+ Add</div>`;
+
+  /* ── LEVEL SECTIONS ── */
+  visLevels.forEach(level => {
+    const sems = SEMESTERS[level] || ['S1','S2'];
+    const isCol = !!collapsed[level];
+
+    /* level summary row */
+    html += `<div class="mc mc-level ${level.toLowerCase()}" onclick="toggleLevel('${level}')">
+      ${level} <span class="mc-toggle">${isCol ? '&#9654;' : '&#9660;'}</span>
+    </div>`;
+    themes.forEach((t) => {
+      const n = data.filter(r => r.level === level && norm(r.topic) === norm(t.key)).length;
+      html += `<div class="mc mc-summary">${n} entr${n===1?'y':'ies'}</div>`;
+    });
+    html += `<div class="mc mc-summary"></div>`;
+
+    if (!isCol) {
+      sems.forEach(sem => {
+        /* semester label */
+        html += `<div class="mc mc-label">${esc(sem)}</div>`;
+        /* theme cells */
+        themes.forEach((t, ci) => {
+          const entries = data.filter(r =>
+            r.level === level && r.semester === sem && norm(r.topic) === norm(t.key)
+          );
+          html += `<div class="mc mc-cell" data-col="${ci}">`;
+          if (!entries.length) {
+            html += `<span class="cell-empty">&mdash;</span>`;
+          } else {
+            entries.forEach(e => {
+              html += `<div class="entry">
+                <div class="entry-title">${esc(e.title||'')}</div>
+                ${e.content ? `<div class="entry-content">${esc(e.content)}</div>` : ''}
+                <div class="entry-meta">
+                  ${e.type   ? `<span class="badge ${typBadge(e.type)}">${esc(e.type)}</span>` : ''}
+                  ${e.status ? `<span class="badge ${stBadge(e.status)}">${esc(e.status)}</span>` : ''}
+                  ${e.author ? `<span class="entry-author">${esc(e.author)}</span>` : ''}
+                </div>
+              </div>`;
+            });
+          }
+          html += `</div>`;
+        });
+        html += `<div class="mc mc-cell mc-add"></div>`;
+      });
+    }
+  });
+
+  el.innerHTML = html;
+}
+
+/* ── HELPERS ── */
+function norm(s)  { return (s||'').trim().toLowerCase(); }
+function esc(s)   { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function typBadge(t) {
+  return {theory:'b-theory',lab:'b-lab',practice:'b-practice',project:'b-project'}[norm(t)] || 'b-theory';
+}
+function stBadge(s) {
+  return {draft:'b-draft',review:'b-review',final:'b-final'}[norm(s)] || 'b-draft';
+}
+function toggleLevel(l) { collapsed[l] = !collapsed[l]; render(); }
+function addCol() {
+  const n = prompt('Name of the new thematic column:');
+  if (!n || !n.trim()) return;
+  if (themes.find(t => norm(t.key) === norm(n))) { alert('Column already exists.'); return; }
+  themes.push({ key: n.trim(), short: n.trim().length > 20 ? n.trim().slice(0,18)+'…' : n.trim(), cls:'', ci: themes.length });
+  render();
+}
+
+/* ── FILTERS ── */
+document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => {
+  const f = p.dataset.f, v = p.dataset.v;
+  document.querySelectorAll(`.pill[data-f="${f}"]`).forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  if (f==='level')  fLevel  = v;
+  if (f==='status') fStatus = v;
+  if (f==='type')   fType   = v;
+  render();
+}));
+
+/* ── SAMPLE DATA ── */
+function sample() {
+  return [
+    {level:'Master',   semester:'S1', topic:'Instrumentation & Sensing', title:'Wearable IoMT Systems',        content:'Low-power sensor nodes, BLE, IEEE 11073; Portea & Tricog case studies',               type:'Theory',   author:'Prof. A', status:'Review'},
+    {level:'Master',   semester:'S1', topic:'Instrumentation & Sensing', title:'Noise Modelling in Biosignals',content:'Thermal, flicker, and motion artefact models; SNR optimisation at 50 Hz mains',       type:'Lab',      author:'Prof. A', status:'Draft'},
+    {level:'Master',   semester:'S2', topic:'Medical Imaging',           title:'Deep Learning for CAD',        content:'U-Net, nnU-Net; DICOM pipelines; TCIA Indian cohort dataset',                         type:'Lab',      author:'Prof. B', status:'Draft'},
+    {level:'Master',   semester:'S3', topic:'BCI / Neural Engineering',  title:'Closed-loop BCI Design',       content:'Online decoding, adaptive stimulation safety; NIMHANS collaboration',                  type:'Project',  author:'Prof. C', status:'Draft'},
+    {level:'Master',   semester:'S4', topic:'Clinical Systems',          title:'AI in Diagnostics',            content:'CDSCO SaMD pathways, IEC 62304; AI in tier-2 hospitals',                              type:'Theory',   author:'Prof. D', status:'Final'},
+    {level:'Bachelor', semester:'S3', topic:'Instrumentation & Sensing', title:'Biosignal Amplifier Design',   content:'ECG front-end, INA128 layout, PCB fabrication at CEDT Bengaluru',                     type:'Lab',      author:'Prof. A', status:'Final'},
+    {level:'Bachelor', semester:'S4', topic:'Medical Imaging',           title:'MRI Physics',                  content:'Spin dynamics, k-space sampling; 1.5T vs 3T comparison',                              type:'Theory',   author:'Prof. B', status:'Review'},
+    {level:'Bachelor', semester:'S5', topic:'Biomechanics & Materials',  title:'Finite Element Analysis',      content:'ANSYS Workbench; hip implant case study, Indian anthropometric data NIOH 2022',        type:'Lab',      author:'Prof. E', status:'Draft'},
+    {level:'Bachelor', semester:'S6', topic:'BCI / Neural Engineering',  title:'P300 Speller Paradigm',        content:'ERP extraction, BCI2000 toolbox; volunteers at AIIMS Delhi',                          type:'Practice', author:'Prof. C', status:'Draft'},
+    {level:'Bachelor', semester:'S7', topic:'Clinical Systems',          title:'Hospital Information Systems', content:'HL7 FHIR, DICOM networking; Ayushman Bharat Digital Mission integration',              type:'Theory',   author:'Prof. D', status:'Review'},
+    {level:'Diploma',  semester:'S1', topic:'Instrumentation & Sensing', title:'Basic Sensors & Signal Cond.', content:'Resistive, capacitive, optical sensors; op-amp circuits; Arduino practicals',          type:'Theory',   author:'Prof. A', status:'Final'},
+    {level:'Diploma',  semester:'S2', topic:'Medical Imaging',           title:'X-Ray & Radiation Safety',     content:'AERB guidelines, ALARA principle; site visit to district hospital radiology unit',     type:'Theory',   author:'Prof. B', status:'Final'},
+    {level:'Diploma',  semester:'S3', topic:'Clinical Systems',          title:'CDSCO Device Regulation',      content:'Medical Devices Rules 2017; Class A–D classification; reading a technical file',       type:'Theory',   author:'Prof. D', status:'Review'},
+    {level:'Diploma',  semester:'S4', topic:'Biomechanics & Materials',  title:'Body Mechanics & Prosthetics', content:'Statics of the musculoskeletal system; Jaipur Foot case study',                       type:'Practice', author:'Prof. E', status:'Draft'},
+  ];
+}
+
+fetchData();
+setInterval(fetchData, 20000);
+</script>
+</body>
+</html>
