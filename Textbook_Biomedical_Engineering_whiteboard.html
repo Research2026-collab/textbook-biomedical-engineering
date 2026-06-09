@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Textbook Biomedical Engineering – Curriculum Whiteboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1923;
+  --surface: #172030;
+  --surface2: #1e2d40;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.18);
+  --text: #e8e8e4;
+  --text-muted: #8a9ab0;
+  --text-faint: #4a5a6a;
+
+  --master:   #AFA9EC; --master-bg:   #26215C; --master-border: #534AB7;
+  --bachelor: #5DCAA5; --bachelor-bg: #04342C; --bachelor-border: #1D9E75;
+  --diploma:  #EF9F27; --diploma-bg:  #412402; --diploma-border: #BA7517;
+
+  --col1: #85B7EB; --col1-bg: #0C447C;
+  --col2: #5DCAA5; --col2-bg: #085041;
+  --col3: #EF9F27; --col3-bg: #633806;
+  --col4: #F0997B; --col4-bg: #712B13;
+  --col5: #AFA9EC; --col5-bg: #3C3489;
+
+  --status-draft:  #EF9F27; --status-draft-bg:  #412402;
+  --status-review: #85B7EB; --status-review-bg: #0C447C;
+  --status-final:  #5DCAA5; --status-final-bg:  #085041;
+
+  --radius: 10px; --radius-sm: 6px;
+  --col-w: 210px;
+  --row-h: 90px;
+}
+body {
+  font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.topbar {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; flex-wrap: wrap;
+  gap: 0.75rem; margin-bottom: 1.25rem;
+}
+.topbar-left h1 { font-size: 18px; font-weight: 500; margin-bottom: 0.2rem; }
+.topbar-left p  { font-size: 12px; color: var(--text-muted); }
+.live {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf82; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.filters {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-bottom: 1.25rem; align-items: center;
+}
+.filter-label { font-size: 11px; color: var(--text-faint); margin-right: 4px; }
+.pill {
+  font-size: 11px; font-weight: 500; padding: 0.25rem 0.75rem;
+  border-radius: 20px; border: 0.5px solid var(--border-strong);
+  background: var(--surface); color: var(--text-muted);
+  cursor: pointer; transition: all 0.15s; user-select: none;
+}
+.pill.active { background: #e8e8e4; color: #0f1923; border-color: #e8e8e4; }
+.divider { width: 1px; height: 20px; background: var(--border-strong); margin: 0 4px; }
+
+.matrix-outer { overflow-x: auto; padding-bottom: 1rem; }
+
+.col-headers {
+  display: flex;
+  margin-bottom: 2px;
+  gap: 2px;
+}
+.col-header-spacer {
+  width: 130px; min-width: 130px;
+  flex-shrink: 0;
+}
+.col-header {
+  width: var(--col-w);
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  font-size: 12px; font-weight: 500;
+  display: flex; flex-direction: column; gap: 2px;
+  border: 0.5px solid var(--border);
+  border-bottom: none;
+}
+.col-header span { font-size: 10px; font-weight: 400; opacity: 0.7; }
+.ch1 { background: var(--col1-bg); color: var(--col1); border-color: var(--col1); }
+.ch2 { background: var(--col2-bg); color: var(--col2); border-color: var(--col2); }
+.ch3 { background: var(--col3-bg); color: var(--col3); border-color: var(--col3); }
+.ch4 { background: var(--col4-bg); color: var(--col4); border-color: var(--col4); }
+.ch5 { background: var(--col5-bg); color: var(--col5); border-color: var(--col5); }
+.col-header.add-col {
+  background: var(--surface2); color: var(--text-faint);
+  border: 0.5px dashed var(--border-strong);
+  cursor: pointer; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+.col-header.add-col:hover { background: #e8e7e0; color: var(--text-muted); }
+
+.level-section { margin-bottom: 4px; }
+.sem-row { display: flex; gap: 2px; margin-bottom: 2px; }
+
+.level-header {
+  display: flex; align-items: center;
+  min-height: 36px; padding: 0 0.75rem;
+  font-size: 12px; font-weight: 600;
+  width: 130px; min-width: 130px;
+  cursor: pointer; user-select: none;
+  border-radius: var(--radius-sm) 0 0 0;
+}
+.level-header.master   { background: var(--master-bg);   color: var(--master);   border: 0.5px solid var(--master-border); }
+.level-header.bachelor { background: var(--bachelor-bg); color: var(--bachelor); border: 0.5px solid var(--bachelor-border); }
+.level-header.diploma  { background: var(--diploma-bg);  color: var(--diploma);  border: 0.5px solid var(--diploma-border); }
+.level-toggle { margin-left: auto; font-size: 10px; opacity: 0.6; }
+
+.sem-label {
+  width: 130px; min-width: 130px;
+  display: flex; align-items: center;
+  padding: 0.4rem 0.75rem;
+  font-size: 11px; color: var(--text-muted);
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-right: none;
+  flex-shrink: 0;
+}
+
+.cell {
+  width: var(--col-w); min-width: var(--col-w);
+  min-height: var(--row-h);
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  padding: 0.6rem 0.7rem;
+  display: flex; flex-direction: column; gap: 4px;
+  position: relative;
+}
+.cell:hover { border-color: var(--border-strong); background: #fdfdfc; }
+.cell[data-col="0"] { border-left: 2px solid var(--col1); }
+.cell[data-col="1"] { border-left: 2px solid var(--col2); }
+.cell[data-col="2"] { border-left: 2px solid var(--col3); }
+.cell[data-col="3"] { border-left: 2px solid var(--col4); }
+.cell[data-col="4"] { border-left: 2px solid var(--col5); }
+.cell[data-col="extra"] { border-left: 0.5px dashed var(--border-strong); }
+
+.cell-empty { color: var(--text-faint); font-size: 11px; font-style: italic; margin: auto; }
+
+.entry {
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.5rem;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  font-size: 11px; line-height: 1.5;
+}
+.entry-title  { font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.entry-content { color: var(--text-muted); font-size: 10.5px; line-height: 1.4; }
+.entry-meta   { display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.entry-author  { font-size: 9.5px; color: var(--text-faint); margin-left: auto; }
+
+.badge {
+  font-size: 9.5px; font-weight: 600; padding: 1px 6px;
+  border-radius: 10px; letter-spacing: 0.04em;
+}
+.badge-theory   { background: #0C447C; color: #85B7EB; }
+.badge-lab      { background: #633806; color: #EF9F27; }
+.badge-project  { background: #085041; color: #5DCAA5; }
+.badge-practice { background: #712B13; color: #F0997B; }
+.badge-draft    { background: var(--status-draft-bg);  color: var(--status-draft); }
+.badge-review   { background: var(--status-review-bg); color: var(--status-review); }
+.badge-final    { background: var(--status-final-bg);  color: var(--status-final); }
+
+.cell.add-col-cell {
+  border: 0.5px dashed var(--border-strong);
+  border-left: 0.5px dashed var(--border-strong);
+  background: var(--surface2);
+  align-items: center; justify-content: center;
+  color: var(--text-faint); font-size: 11px;
+  cursor: pointer;
+}
+.cell.add-col-cell:hover { background: #e8e7e0; color: var(--text-muted); }
+
+.summary-cell {
+  width: var(--col-w); min-width: var(--col-w);
+  min-height: 36px;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.summary-cell span { font-size: 10px; color: var(--text-faint); }
+
+.legend {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin-top: 1.5rem; padding-top: 1rem;
+  border-top: 0.5px solid var(--border);
+  align-items: center;
+}
+.legend-label { font-size: 11px; color: var(--text-faint); }
+
+.infobar {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px; color: var(--text-muted); line-height: 1.7;
+}
+.infobar strong { color: var(--text); }
+.infobar code {
+  background: var(--border); border-radius: 3px;
+  padding: 1px 4px; font-size: 10.5px;
+}
+
+.error-banner {
+  display: none; background: #FCEBEB; border: 0.5px solid #F09595;
+  border-radius: var(--radius-sm); padding: 0.6rem 1rem;
+  font-size: 12px; color: #A32D2D; margin-bottom: 1rem;
+}
+.error-banner.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>Textbook Biomedical Engineering – Curriculum Whiteboard</h1>
+    <p>Read-only view &middot; Edit directly in Google Sheets &middot; Refreshes every 20 seconds</p>
+  </div>
+  <div class="live">
+    <div class="dot"></div>
+    <span id="livetext">Loading&hellip;</span>
+  </div>
+</div>
+
+<div class="error-banner" id="errorBanner">
+  Could not reach the data source. Please check the Apps Script URL and deployment settings.
+</div>
+
+<div class="filters">
+  <span class="filter-label">Level</span>
+  <span class="pill active" data-filter="level" data-val="all">All</span>
+  <span class="pill" data-filter="level" data-val="Master">Master</span>
+  <span class="pill" data-filter="level" data-val="Bachelor">Bachelor</span>
+  <span class="pill" data-filter="level" data-val="Diploma">Diploma</span>
+  <div class="divider"></div>
+  <span class="filter-label">Status</span>
+  <span class="pill active" data-filter="status" data-val="all">All</span>
+  <span class="pill" data-filter="status" data-val="Draft">Draft</span>
+  <span class="pill" data-filter="status" data-val="Review">Review</span>
+  <span class="pill" data-filter="status" data-val="Final">Final</span>
+  <div class="divider"></div>
+  <span class="filter-label">Type</span>
+  <span class="pill active" data-filter="type" data-val="all">All</span>
+  <span class="pill" data-filter="type" data-val="Theory">Theory</span>
+  <span class="pill" data-filter="type" data-val="Lab">Lab</span>
+  <span class="pill" data-filter="type" data-val="Practice">Practice</span>
+  <span class="pill" data-filter="type" data-val="Project">Project</span>
+</div>
+
+<div class="matrix-outer">
+  <div id="matrixRoot"></div>
+</div>
+
+<div class="legend">
+  <span class="legend-label">Type</span>
+  <span class="badge badge-theory">Theory</span>
+  <span class="badge badge-lab">Lab</span>
+  <span class="badge badge-practice">Practice</span>
+  <span class="badge badge-project">Project</span>
+  <div class="divider"></div>
+  <span class="legend-label">Status</span>
+  <span class="badge badge-draft">Draft</span>
+  <span class="badge badge-review">Review</span>
+  <span class="badge badge-final">Final</span>
+</div>
+
+<div class="infobar">
+  <strong>How to add or edit content</strong><br>
+  Open the Google Sheet <em>Textbook_Biomedical_Engineering</em>, tab <em>Curriculum</em>, and add or edit rows using these columns:<br>
+  <code>level</code> (Master / Bachelor / Diploma) &nbsp;
+  <code>semester</code> (S1, S2 &hellip;) &nbsp;
+  <code>topic</code> (column topic) &nbsp;
+  <code>title</code> &nbsp;
+  <code>content</code> &nbsp;
+  <code>type</code> (Theory / Lab / Practice / Project) &nbsp;
+  <code>author</code> &nbsp;
+  <code>status</code> (Draft / Review / Final) &nbsp;
+  <code>last_edited</code>
+</div>
+
+<script>
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxAsEYvJTMNFIretCdHPGwAwDxAlaPgr7hkxVn07F9FOTrV5Ma5CHqp1Bs_L9S9AcXl/exec';
+
+const LEVELS = ['Master', 'Bachelor', 'Diploma'];
+
+const SEMESTERS = {
+  Master:   ['S1', 'S2', 'S3', 'S4'],
+  Bachelor: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'],
+  Diploma:  ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+};
+
+const DEFAULT_THEMES = [
+  { key: 'Instrumentation & Sensing',  short: 'Instrumentation',  cls: 'ch1', colIdx: 0 },
+  { key: 'Medical Imaging',            short: 'Medical Imaging',   cls: 'ch2', colIdx: 1 },
+  { key: 'Biomechanics & Materials',   short: 'Biomechanics',      cls: 'ch3', colIdx: 2 },
+  { key: 'BCI / Neural Engineering',   short: 'BCI / Neural Eng.', cls: 'ch4', colIdx: 3 },
+  { key: 'Clinical Systems',           short: 'Clinical Systems',  cls: 'ch5', colIdx: 4 },
+];
+
+let allData   = [];
+let themes    = [...DEFAULT_THEMES];
+let collapsed = {};
+let filterLevel  = 'all';
+let filterStatus = 'all';
+let filterTyp    = 'all';
+
+async function fetchData() {
+  if (SHEET_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    allData = getSampleData();
+    render();
+    document.getElementById('livetext').textContent = 'Sample data – no URL configured yet';
+    return;
+  }
+  try {
+    const res = await fetch(SHEET_URL + '?t=' + Date.now());
+    allData = await res.json();
+    document.getElementById('errorBanner').classList.remove('visible');
+    // discover any additional topic columns present in the sheet
+    const knownKeys = new Set(themes.map(t => t.key));
+    allData.forEach(r => {
+      if (r.topic && !knownKeys.has(r.topic)) {
+        knownKeys.add(r.topic);
+        themes.push({ key: r.topic, short: r.topic.length > 18 ? r.topic.slice(0,16) + '…' : r.topic, cls: '', colIdx: themes.length });
+      }
+    });
+    render();
+    const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('livetext').textContent = 'Last updated ' + now;
+  } catch(e) {
+    document.getElementById('errorBanner').classList.add('visible');
+    document.getElementById('livetext').textContent = 'Connection error';
+  }
+}
+
+function render() {
+  const root = document.getElementById('matrixRoot');
+
+  const data = allData.filter(r => {
+    if (filterLevel  !== 'all' && r.level  !== filterLevel)  return false;
+    if (filterStatus !== 'all' && (r.status || 'Draft') !== filterStatus) return false;
+    if (filterTyp    !== 'all' && (r.typee    || '')      !== filterTyp)    return false;
+    return true;
+  });
+
+  const visibleLevels = filterLevel === 'all' ? LEVELS : [filterLevel];
+  let html = '';
+
+  // column headers
+  html += '<div class="col-headers"><div class="col-header-spacer"></div>';
+  themes.forEach(t => {
+    html += `<div class="col-header ${t.cls}">${esc(t.short)}</div>`;
+  });
+  html += `<div class="col-header add-col" onclick="addColumn()">+ Add column</div>`;
+  html += '</div>';
+
+  visibleLevels.forEach(level => {
+    const sems = SEMESTERS[level] || ['S1','S2'];
+    const isCollapsed = collapsed[level];
+    html += '<div class="level-section">';
+
+    // level header row
+    html += '<div class="sem-row">';
+    html += `<div class="level-header ${level.toLowerCase()}" onclick="toggleLevel('${level}')">
+      ${level} <span class="level-toggle">${isCollapsed ? '&#9654;' : '&#9660;'}</span>
+    </div>`;
+    if (!isCollapsed) {
+      themes.forEach((t, ci) => {
+        const n = data.filter(r => r.level === level && normalise(r.topic) === normalise(t.key)).length;
+        html += `<div class="summary-cell" data-col="${ci}"><span>${n} entr${n === 1 ? 'y' : 'ies'}</span></div>`;
+      });
+      html += `<div class="summary-cell add-col-cell" data-col="extra"></div>`;
+    }
+    html += '</div>';
+
+    if (!isCollapsed) {
+      sems.forEach(sem => {
+        html += '<div class="sem-row">';
+        html += `<div class="sem-label">${esc(sem)}</div>`;
+        themes.forEach((t, ci) => {
+          const entries = data.filter(r =>
+            r.level === level &&
+            r.semester === sem &&
+            normalise(r.topic) === normalise(t.key)
+          );
+          html += `<div class="cell" data-col="${ci}">`;
+          if (entries.length === 0) {
+            html += '<span class="cell-empty">&mdash;</span>';
+          } else {
+            entries.forEach(e => {
+              html += `<div class="entry">
+                <div class="entry-title">${esc(e.title || '')}</div>
+                ${e.content ? `<div class="entry-content">${esc(e.content)}</div>` : ''}
+                <div class="entry-meta">
+                  ${e.typee    ? `<span class="badge ${typeBadge(e.typee)}">${esc(e.typee)}</span>`       : ''}
+                  ${e.status ? `<span class="badge ${statusBadge(e.status)}">${esc(e.status)}</span>` : ''}
+                  ${e.author  ? `<span class="entry-author">${esc(e.author)}</span>`                   : ''}
+                </div>
+              </div>`;
+            });
+          }
+          html += '</div>';
+        });
+        html += `<div class="cell add-col-cell" data-col="extra"></div>`;
+        html += '</div>';
+      });
+    }
+    html += '</div>';
+  });
+
+  root.innerHTML = html;
+}
+
+function normalise(s) { return (s || '').trim().toLowerCase(); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function typeBadge(t) {
+  const m = { theory:'badge-theory', lab:'badge-lab', practice:'badge-practice', project:'badge-project' };
+  return m[(t||'').toLowerCase()] || 'badge-theory';
+}
+function statusBadge(s) {
+  const m = { draft:'badge-draft', review:'badge-review', final:'badge-final' };
+  return m[(s||'draft').toLowerCase()] || 'badge-draft';
+}
+
+function toggleLevel(level) {
+  collapsed[level] = !collapsed[level];
+  render();
+}
+
+function addColumn() {
+  const name = prompt('Name of the new thematic column (e.g. "Regulatory Affairs & CDSCO"):');
+  if (!name || !name.trim()) return;
+  const key = name.trim();
+  if (themes.find(t => normalise(t.key) === normalise(key))) {
+    alert('A column with that name already exists.');
+    return;
+  }
+  themes.push({ key, short: key.length > 20 ? key.slice(0,18) + '…' : key, cls: '', colIdx: themes.length });
+  render();
+}
+
+document.querySelectorAll('.pill').forEach(p => {
+  p.addEventListener('click', () => {
+    const filter = p.dataset.filter;
+    const val    = p.dataset.val;
+    document.querySelectorAll(`.pill[data-filter="${filter}"]`).forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    if (filter === 'level')  filterLevel  = val;
+    if (filter === 'status') filterStatus = val;
+    if (filter === 'type')    filterTyp    = val;
+    render();
+  });
+});
+
+function getSampleData() {
+  return [
+    { level:'Master',   semester:'S1', topic:'Instrumentation & Sensing', title:'Wearable IoMT Systems',         content:'Low-power sensor nodes, BLE, IEEE 11073; Indian context: Portea, Tricog case studies', type:'Theory',   author:'Prof. Sharma',  status:'Review' },
+    { level:'Master',   semester:'S1', topic:'Instrumentation & Sensing', title:'Noise Modelling in Biosignals',  content:'Thermal, flicker, and motion artefact models; SNR optimisation for ECG at 50 Hz mains', type:'Lab',      author:'Prof. Sharma',  status:'Draft'  },
+    { level:'Master',   semester:'S2', topic:'Medical Imaging',           title:'Deep Learning for CAD',         content:'U-Net, nnU-Net architectures; DICOM pipelines; dataset: TCIA Indian cohort',            type:'Lab',      author:'Prof. Nair',    status:'Draft'  },
+    { level:'Master',   semester:'S3', topic:'BCI / Neural Engineering',  title:'Closed-loop BCI Design',        content:'Online decoding, adaptive stimulation safety; NIMHANS collaboration module',             type:'Project',  author:'Prof. Iyer',    status:'Draft'  },
+    { level:'Master',   semester:'S4', topic:'Clinical Systems',          title:'AI in Diagnostics',             content:'CDSCO SaMD pathways, IEC 62304; health-economics of AI deployment in tier-2 hospitals', type:'Theory',   author:'Prof. Reddy',   status:'Final'  },
+    { level:'Bachelor', semester:'S3', topic:'Instrumentation & Sensing', title:'Biosignal Amplifier Design',    content:'ECG front-end, INA128 layout, PCB fabrication at CEDT Bengaluru',                        type:'Lab',      author:'Prof. Sharma',  status:'Final'  },
+    { level:'Bachelor', semester:'S4', topic:'Medical Imaging',           title:'MRI Physics',                   content:'Spin dynamics, k-space sampling, gradient coil design; 1.5T vs 3T comparison',          type:'Theory',   author:'Prof. Nair',    status:'Review' },
+    { level:'Bachelor', semester:'S5', topic:'Biomechanics & Materials',  title:'Finite Element Analysis',       content:'ANSYS Workbench; hip implant case study using Indian anthropometric data (NIOH 2022)',    type:'Lab',      author:'Prof. Gupta',   status:'Draft'  },
+    { level:'Bachelor', semester:'S6', topic:'BCI / Neural Engineering',  title:'P300 Speller Paradigm',         content:'ERP extraction pipeline, BCI2000 toolbox; participants: healthy volunteers, AIIMS Delhi',  type:'Practice', author:'Prof. Iyer',    status:'Draft'  },
+    { level:'Bachelor', semester:'S7', topic:'Clinical Systems',          title:'Hospital Information Systems',  content:'HL7 FHIR, DICOM networking; Ayushman Bharat Digital Mission (ABDM) integration',          type:'Theory',   author:'Prof. Reddy',   status:'Review' },
+    { level:'Diploma',  semester:'S1', topic:'Instrumentation & Sensing', title:'Basic Sensors & Signal Conditioning', content:'Resistive, capacitive, optical sensors; op-amp circuits; Arduino practical sessions', type:'Theory',   author:'Prof. Sharma',  status:'Final'  },
+    { level:'Diploma',  semester:'S2', topic:'Medical Imaging',           title:'X-Ray & Radiation Safety',      content:'AERB guidelines, ALARA principle; site visit: district government hospital radiology unit', type:'Theory',   author:'Prof. Nair',    status:'Final'  },
+    { level:'Diploma',  semester:'S3', topic:'Clinical Systems',          title:'CDSCO Device Regulation',       content:'Medical Devices Rules 2017; Class A–D classification; practical: reading a 510(k) equivalent', type:'Theory', author:'Prof. Reddy',  status:'Review' },
+    { level:'Diploma',  semester:'S4', topic:'Biomechanics & Materials',  title:'Body Mechanics & Prosthetics',  content:'Statics of the musculoskeletal system; Jaipur Foot case study; material selection exercise', type:'Practice', author:'Prof. Gupta',  status:'Draft'  },
+  ];
+}
+
+fetchData();
+setInterval(fetchData, 20000);
+</script>
+</body>
+</html>
